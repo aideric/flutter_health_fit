@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:googleapis/storage/v1.dart';
+import 'package:googleapis_auth/auth_io.dart';
 
 // Current day's accumulated values
 enum _ActivityType{ steps, cycling, walkRun, heartRate, flights }

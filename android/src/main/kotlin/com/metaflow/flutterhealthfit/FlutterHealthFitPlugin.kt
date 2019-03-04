@@ -106,6 +106,8 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(activity),
                     fitnessOptions)
+            result.success(true)
+
         } else {
             result.success(true)
         }
