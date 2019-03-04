@@ -9,4 +9,7 @@ A flutter plugin for using Apple HealthKit and Google Fit.
 
 * Open the `info.plist`
 * Add: NSHealthUpdateUsageDescription, NSHealthShareUsageDescription.
+
+* For android user
+* https://developers.google.com/fit/android/get-api-key :D
  
