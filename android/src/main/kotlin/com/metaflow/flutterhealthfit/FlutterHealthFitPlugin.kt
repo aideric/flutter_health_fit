@@ -61,7 +61,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 
                     else ->  {
                         val map = HashMap<String, Double>()
-                        map["value"] = 0.0
+//                        map["value"] = 0.0
                         result.success(map)
                     }
                 }
