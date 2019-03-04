@@ -53,6 +53,8 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 
             "getBasicHealthData" -> result.success(HashMap<String, String>())
 
+            "getFitnessHistoy" -> getFitnessHistoy(result)
+
             "getActivity" -> {
                 val name = call.argument<String>("name")
 
@@ -162,7 +164,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 
                     Log.d(TAG, "returning $count steps for $dayString")
                     val map = HashMap<String, Double>()
-                    map["value"] = count.asInt().toDouble()
+                    map["value"] = count as Double?
 
                     result.success(map)
                 } else {
@@ -174,6 +176,26 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
             }
 
         }.start()
+    }
+
+    private fun getFitnessHistoy(result: Result)){
+
+        val fitnessOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .build()
+
+        val gsa = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
+
+        val response = Fitness.getHistoryClient(this, gsa)
+                .readData(DataReadRequest.Builder()
+                        .read(DataType.TYPE_STEP_COUNT_DELTA)
+                        .setTimeRange(startTime.getMillis(), endTime.getMillis(), TimeUnit.MILLISECONDS)
+                        .build())
+
+        val readDataResult = Tasks.await(response)
+        val dataSet = readDataResult.getDataSet(DataType.TYPE_STEP_COUNT_DELTA)
+//        return dataSet;
+        result.success(dataSet)
     }
 
     private fun getFitnessOptions() = FitnessOptions.builder()
