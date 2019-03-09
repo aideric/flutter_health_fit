@@ -24,9 +24,9 @@ class FlutterHealthFit {
     return await _channel.invokeMethod('getBasicHealthData');
   }
 
-  static Future<Map<dynamic, dynamic>> get getHealthDataHistory async {
-    return await _channel.invokeMethod('getFitnessHistoy');
-  }
+//  static Future<Map<dynamic, dynamic>> get getHealthDataHistory async {
+//    return await _channel.invokeMethod('getFitnessHistoy');
+//  }
 
   static Future<double> get getSteps async {
     return await _getActivityData(_ActivityType.steps, "count");
