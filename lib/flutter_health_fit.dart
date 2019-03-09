@@ -1,15 +1,14 @@
 import 'dart:async';
+import 'dart:core';
 
 import 'package:flutter/services.dart';
-import 'package:googleapis/storage/v1.dart';
-import 'package:googleapis_auth/auth_io.dart';
 
 // Current day's accumulated values
 enum _ActivityType{ steps, cycling, walkRun, heartRate, flights }
 
 class FlutterHealthFit {
   static const MethodChannel _channel =
-      const MethodChannel('flutter_health_fit');
+  const MethodChannel('flutter_health_fit');
 
   static Future<String> get platformVersion async {
     final String version = await _channel.invokeMethod('getPlatformVersion');
@@ -27,6 +26,10 @@ class FlutterHealthFit {
 //  static Future<Map<dynamic, dynamic>> get getHealthDataHistory async {
 //    return await _channel.invokeMethod('getFitnessHistoy');
 //  }
+
+  static Future<Map<dynamic, dynamic>> get getStepsHistory async {
+    return await _channel.invokeMethod('getStepHistory');
+  }
 
   static Future<double> get getSteps async {
     return await _getActivityData(_ActivityType.steps, "count");
@@ -68,6 +71,6 @@ class FlutterHealthFit {
       return null;
     }
 
-    return result["value"];
+    return result;
   }
 }

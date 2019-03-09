@@ -58,6 +58,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 //            "getBasicHealthData" -> result.success(HashMap<String, String>())
             "getBasicHealthData" -> getFitnessHistoy(result)
 
+            "getStepHistory" -> getStepsTotalWithRange(result,-7)
 
 //            "getFitnessHistoy" -> getFitnessHistoy(result)
 
@@ -65,7 +66,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                 val name = call.argument<String>("name")
 
                 when (name) {
-                    "steps" -> getStepsTotalWithRange(result,-14)
+                    "steps" -> getYesterdaysStepsTotal(result)
 
                     else -> {
                         val map = HashMap<String, Double>()
@@ -232,18 +233,19 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                             val count = dp.getValue(aggregatedDataType.fields[0])
 
                             Log.d(TAG, "returning $count steps for $dayString")
-                            map["value"] = count.asInt().toDouble()
+                            map[dayString] = count.asInt().toDouble()
                         }catch (e :Throwable)
                         {
                             Log.d(TAG, "returning 0 steps for $dayString")
 
-                            map["value"] = 0.0
+                            map[dayString] = 0.0
                         }
                         finally {
                             i++
                         }
 
                     }
+                    Log.d(TAG,map.toString())
                     result.success(map)
                 } else {
                     result.error("No data", "No data found for $dayString", null)
@@ -380,7 +382,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                 .build()
         Log.d(TAG,"Response")
         val response = Fitness.getHistoryClient(activity, gsa).readData(readRequest)
-        
+
         val dayString = dateFormat.format(Date(startCal.timeInMillis))
 
         Thread {
