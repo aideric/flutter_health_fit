@@ -70,7 +70,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 
                     else -> {
                         val map = HashMap<String, Double>()
-//                        map["value"] = 0.0
+                        map["value"] = 0.0
                         result.success(map)
                     }
                 }
@@ -225,23 +225,27 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 
                 if (!readDataResult.buckets.isEmpty()) {
                     var i = 0
+                    var dateDiff = date
                     for (item in readDataResult.buckets) {
-                        val dayString = dateFormat.format(Date(startCal.timeInMillis+86400000*(i)))
+                        val millis = startCal.timeInMillis+86400000*(i)
+                        val dayString = dateFormat.format(Date(millis))
                         Log.d(TAG,"buckets "+item)
                         try {
                             val dp = item.dataSets[0].dataPoints[0]
                             val count = dp.getValue(aggregatedDataType.fields[0])
 
                             Log.d(TAG, "returning $count steps for $dayString")
-                            map[dayString] = count.asInt().toDouble()
+                            Log.d(TAG,"dateDiff $dateDiff")
+                            map[dateDiff.toString()] = count.asInt().toDouble()
                         }catch (e :Throwable)
                         {
                             Log.d(TAG, "returning 0 steps for $dayString")
 
-                            map[dayString] = 0.0
+                            map[dateDiff.toString()] = 0.0
                         }
                         finally {
                             i++
+                            dateDiff++
                         }
 
                     }

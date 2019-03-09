@@ -71,6 +71,6 @@ class FlutterHealthFit {
       return null;
     }
 
-    return result;
+    return result["value"];
   }
 }
