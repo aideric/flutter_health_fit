@@ -37,7 +37,7 @@ class HealthkitReader: NSObject {
         ]
     }
     
-    func getHealthDataValue ( type : HKQuantityTypeIdentifier , strUnitType : String , complition: @escaping (((([[String:Any]])?) -> Void)) )
+    func getHealthDataValue ( type : HKQuantityTypeIdentifier , strUnitType : String ,day:Int, complition: @escaping (((([[String:Any]])?) -> Void)) )
     {
         if let heartRateType = HKQuantityType.quantityType(forIdentifier: type)
         {
@@ -51,10 +51,10 @@ class HealthkitReader: NSObject {
                 
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-                let yesterday = Date().yesterday
+                let day = Date().getDay(day)
                 
                 //this is probably why my data is wrong
-                let predicate = HKQuery.predicateForSamples(withStart: yesterday, end: Date().startDay, options: [])
+                let predicate = HKQuery.predicateForSamples(withStart: day, end: Date().getDay(day+1), options: [])
 
                 let query = HKSampleQuery(sampleType:heartRateType, predicate:predicate, limit:0, sortDescriptors:[sortByTime], resultsHandler:{(query, results, error) in
                     

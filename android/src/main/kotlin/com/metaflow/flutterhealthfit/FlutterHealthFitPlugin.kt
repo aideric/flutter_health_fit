@@ -21,9 +21,8 @@ import java.text.DateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.xml.datatype.DatatypeConstants.DAYS
+
 //import android.renderscript.Element.DataType
-
-
 
 
 class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler, PluginRegistry.ActivityResultListener {
@@ -58,15 +57,20 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 //            "getBasicHealthData" -> result.success(HashMap<String, String>())
             "getBasicHealthData" -> getFitnessHistoy(result)
 
-            "getStepHistory" -> getStepsTotalWithRange(result,-7)
+            "getStepHistory" -> {
+                int day = call . argument < String >("day")
+
+                getStepsTotalWithRange(result, day)
+            }
 
 //            "getFitnessHistoy" -> getFitnessHistoy(result)
 
             "getActivity" -> {
                 val name = call.argument<String>("name")
+                int day = call.argument<String>("day")
 
                 when (name) {
-                    "steps" -> getYesterdaysStepsTotal(result)
+                    "steps" -> getDayStepsTotal(result, day)
 
                     else -> {
                         val map = HashMap<String, Double>()
@@ -133,6 +137,58 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                 }
     }
 
+    private fun getDayStepsTotal(result: Result, day: Int) {
+        val gsa = GoogleSignIn.getAccountForExtension(activity, getFitnessOptions())
+
+        val startCal = GregorianCalendar()
+        startCal.add(Calendar.DAY_OF_YEAR, day)
+        startCal.set(Calendar.HOUR_OF_DAY, 0)
+        startCal.set(Calendar.MINUTE, 0)
+        startCal.set(Calendar.SECOND, 0)
+
+//        val c = Calendar.instance;
+        val endCal = GregorianCalendar(
+                startCal.get(Calendar.YEAR),
+                startCal.get(Calendar.MONTH),
+                startCal.get(Calendar.DAY_OF_MONTH),
+                23,
+                59)
+
+        val request = DataReadRequest.Builder()
+                .aggregate(dataType, aggregatedDataType)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startCal.timeInMillis, endCal.timeInMillis, TimeUnit.MILLISECONDS)
+                .build()
+
+        val response = Fitness.getHistoryClient(activity, gsa).readData(request)
+
+        val dateFormat = DateFormat.getDateInstance()
+        val dayString = dateFormat.format(Date(startCal.timeInMillis))
+
+        Thread {
+            try {
+                val readDataResult = Tasks.await<DataReadResponse>(response)
+                Log.d(TAG, "buckets count: ${readDataResult.buckets.size}")
+
+                if (!readDataResult.buckets.isEmpty()) {
+                    val dp = readDataResult.buckets[0].dataSets[0].dataPoints[0]
+                    val count = dp.getValue(aggregatedDataType.fields[0])
+
+                    Log.d(TAG, "returning $count steps for $dayString")
+                    val map = HashMap<String, Double>()
+                    map["value"] = count.asInt().toDouble()
+
+                    result.success(map)
+                } else {
+                    result.error("No data", "No data found for $dayString", null)
+                }
+            } catch (e: Throwable) {
+                result.error("failed", e.message, null)
+            }
+
+        }.start()
+    }
+
     private fun getYesterdaysStepsTotal(result: Result) {
         val gsa = GoogleSignIn.getAccountForExtension(activity, getFitnessOptions())
 
@@ -185,7 +241,8 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
         }.start()
     }
 
-    private fun getStepsTotalWithRange(result: Result,date: Int){
+
+    private fun getStepsTotalWithRange(result: Result, date: Int) {
         val gsa = GoogleSignIn.getAccountForExtension(activity, getFitnessOptions())
 
         val startCal = GregorianCalendar()
@@ -227,29 +284,27 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                     var i = 0
                     var dateDiff = date
                     for (item in readDataResult.buckets) {
-                        val millis = startCal.timeInMillis+86400000*(i)
+                        val millis = startCal.timeInMillis + 86400000 * (i)
                         val dayString = dateFormat.format(Date(millis))
-                        Log.d(TAG,"buckets "+item)
+                        Log.d(TAG, "buckets " + item)
                         try {
                             val dp = item.dataSets[0].dataPoints[0]
                             val count = dp.getValue(aggregatedDataType.fields[0])
 
                             Log.d(TAG, "returning $count steps for $dayString")
-                            Log.d(TAG,"dateDiff $dateDiff")
+                            Log.d(TAG, "dateDiff $dateDiff")
                             map[dateDiff.toString()] = count.asInt().toDouble()
-                        }catch (e :Throwable)
-                        {
+                        } catch (e: Throwable) {
                             Log.d(TAG, "returning 0 steps for $dayString")
 
                             map[dateDiff.toString()] = 0.0
-                        }
-                        finally {
+                        } finally {
                             i++
                             dateDiff++
                         }
 
                     }
-                    Log.d(TAG,map.toString())
+                    Log.d(TAG, map.toString())
                     result.success(map)
                 } else {
                     result.error("No data", "No data found for $dayString", null)
@@ -384,7 +439,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                 .bucketByTime(1, TimeUnit.DAYS)
                 .setTimeRange(startCal.timeInMillis, endCal.timeInMillis, TimeUnit.MILLISECONDS)
                 .build()
-        Log.d(TAG,"Response")
+        Log.d(TAG, "Response")
         val response = Fitness.getHistoryClient(activity, gsa).readData(readRequest)
 
         val dayString = dateFormat.format(Date(startCal.timeInMillis))
@@ -443,7 +498,6 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 
 
     }
-
 
 
     private fun getFitnessOptions() = FitnessOptions.builder()

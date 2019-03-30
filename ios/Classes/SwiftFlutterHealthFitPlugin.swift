@@ -67,6 +67,11 @@ public class SwiftFlutterHealthFitPlugin: NSObject, FlutterPlugin {
             result(nil)
             return
         }
+
+        guard let day = params["day"] else {
+                    result(0)
+                    return
+        }
         
         
         var type: HKQuantityTypeIdentifier;
@@ -87,7 +92,7 @@ public class SwiftFlutterHealthFitPlugin: NSObject, FlutterPlugin {
         }
         
         HealthkitReader.sharedInstance.requestHealthAuthorization() { success in
-            HealthkitReader.sharedInstance.getHealthDataValue(type: type, strUnitType: units) { results in
+            HealthkitReader.sharedInstance.getHealthDataValue(type: type, strUnitType: units,day:day) { results in
                 if let data = results {
                     var value: Double = 0
                     if data.count > 0
@@ -117,5 +122,9 @@ extension Date {
     
     var startDay: Date {
         return Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: self)!
+    }
+
+    var getDay(day:Int):Date {
+            return Calendar.current.date(byAdding: .day, value: day, to: startDay)!
     }
 }

@@ -4,11 +4,11 @@ import 'dart:core';
 import 'package:flutter/services.dart';
 
 // Current day's accumulated values
-enum _ActivityType{ steps, cycling, walkRun, heartRate, flights }
+enum _ActivityType { steps, cycling, walkRun, heartRate, flights }
 
 class FlutterHealthFit {
   static const MethodChannel _channel =
-  const MethodChannel('flutter_health_fit');
+      const MethodChannel('flutter_health_fit');
 
   static Future<String> get platformVersion async {
     final String version = await _channel.invokeMethod('getPlatformVersion');
@@ -27,47 +27,46 @@ class FlutterHealthFit {
 //    return await _channel.invokeMethod('getFitnessHistoy');
 //  }
 
-  static Future<Map<dynamic, dynamic>> get getStepsHistory async {
-    return await _channel.invokeMethod('getStepHistory');
+  static Future<Map<dynamic, dynamic>> getStepsHistory(int day) async {
+    return await _channel.invokeMethod('getStepHistory',{"day":day});
+  }
+
+  static Future<double> getDaySteps(int day) async {
+    return await _getActivityData(_ActivityType.steps, "count", day);
   }
 
   static Future<double> get getSteps async {
-    return await _getActivityData(_ActivityType.steps, "count");
+    return await _getActivityData(_ActivityType.steps, "count", -1);
   }
 
   static Future<double> get getWalkingAndRunningDistance async {
-    return await _getActivityData(_ActivityType.walkRun, "m");
+    return await _getActivityData(_ActivityType.walkRun, "m", -1);
   }
 
   static Future<double> get geCyclingDistance async {
-    return await _getActivityData(_ActivityType.cycling, "m");
+    return await _getActivityData(_ActivityType.cycling, "m", -1);
   }
 
   static Future<double> get getFlights async {
-    return await _getActivityData(_ActivityType.flights, "count");
+    return await _getActivityData(_ActivityType.flights, "count", -1);
   }
 
-  static Future<double> _getActivityData(_ActivityType activityType, String units) async {
+  static Future<double> _getActivityData(
+      _ActivityType activityType, String units, int day) async {
     var result;
 
     try {
-      result = await _channel.invokeMethod(
-          'getActivity',
-          {
-            "name": activityType
-                .toString()
-                .split(".")
-                .last,
-            "units": units
-          }
-      );
-    }
-    catch (e) {
+      result = await _channel.invokeMethod('getActivity', {
+        "name": activityType.toString().split(".").last,
+        "units": units,
+        "day": day,
+      });
+    } catch (e) {
       print(e.toString());
       return null;
     }
 
-    if (result == null || result.isEmpty){
+    if (result == null || result.isEmpty) {
       return null;
     }
 
