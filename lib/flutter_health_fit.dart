@@ -28,8 +28,11 @@ class FlutterHealthFit {
 //  }
 
   static Future<Map<dynamic, dynamic>> getStepsHistory(int day) async {
-    return await _channel.invokeMethod('getStepHistory',{"day":day});
-  }
+    int date=day;
+    if(date>0){
+      date = -date+1;
+    }
+    return await _channel.invokeMethod('getStepHistory',{"day":date});  }
 
   static Future<double> getDaySteps(int day) async {
     return await _getActivityData(_ActivityType.steps, "count", day);
