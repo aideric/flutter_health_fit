@@ -58,19 +58,21 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
             "getBasicHealthData" -> getFitnessHistoy(result)
 
             "getStepHistory" -> {
-                int day = call . argument < String >("day")
-
-                getStepsTotalWithRange(result, day)
+                val date = call.argument<Int>("day")
+//                val date:Int? = day?.toInt()
+                getStepsTotalWithRange(result, date as Int)
             }
 
 //            "getFitnessHistoy" -> getFitnessHistoy(result)
 
             "getActivity" -> {
                 val name = call.argument<String>("name")
-                int day = call.argument<String>("day")
+                val date = call.argument<Int>("day")
+
+//                val date:Int? = day?.toInt()
 
                 when (name) {
-                    "steps" -> getDayStepsTotal(result, day)
+                    "steps" -> getDayStepsTotal(result, date as Int)
 
                     else -> {
                         val map = HashMap<String, Double>()
@@ -90,10 +92,14 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                 recordData { success ->
                     Log.i(TAG, "Record data success: $success!")
 
-                    if (success)
-                        deferredResult?.success(true)
-                    else
+                    try {
+                        if (success)
+                            deferredResult?.success(true)
+//                        else
+//                            deferredResult?.error("no record", "Record data operation denied", null)
+                    } catch (e:Exception) {
                         deferredResult?.error("no record", "Record data operation denied", null)
+                    }
 
                     deferredResult = null
                 }
@@ -243,6 +249,7 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
 
 
     private fun getStepsTotalWithRange(result: Result, date: Int) {
+        Log.d(TAG, "date is  $date")
         val gsa = GoogleSignIn.getAccountForExtension(activity, getFitnessOptions())
 
         val startCal = GregorianCalendar()
