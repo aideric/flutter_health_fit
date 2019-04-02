@@ -92,14 +92,14 @@ class FlutterHealthFitPlugin(private val activity: Activity) : MethodCallHandler
                 recordData { success ->
                     Log.i(TAG, "Record data success: $success!")
 
-                    try {
+//                    try {
                         if (success)
                             deferredResult?.success(true)
-//                        else
-//                            deferredResult?.error("no record", "Record data operation denied", null)
-                    } catch (e:Exception) {
-                        deferredResult?.error("no record", "Record data operation denied", null)
-                    }
+                        else
+                            deferredResult?.error("no record", "Record data operation denied", null)
+//                    } catch (e:Exception) {
+//                        deferredResult?.error("no record", "Record data operation denied", null)
+//                    }
 
                     deferredResult = null
                 }
